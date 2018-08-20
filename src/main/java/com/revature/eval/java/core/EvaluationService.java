@@ -620,23 +620,47 @@ public class EvaluationService {
 	private ArrayList<Long> getPrimes(long l) {
 		ArrayList<Long> primes = new ArrayList<>();
 		
-		// TODO: This can be optimized by only checking if a number contains other
-		// TODO: prime numbers as factors, instead of checking all numbers. As prime numbers
-		// TODO: are all factors of composite numbers, any number that has a composite factor 
-		// TODO: is also divisible by that composite number's prime factors. 
+		// Used in optimizing the nubmer needed to investigate
+		long sqrt;
+		
+		// A boolean used to when evaluating if the current number is prime
+		boolean isPrime;
 		
 		// Go through each number from 2 to l inclusive, (as 0 & 1 are not prime). 
 		// It needs to be inclusive as l itself might be prime. 
 		// If a number is prime, add it to the set. 
 		for (long i=2; i<=l; i++) {
-			if (isPrime(i)) {
+			isPrime = true;
+			// Get the square root of the long, as there will never be a factor 
+			// greater than its square root. The loss of precision is accounted 
+			// by incrementing by one, which will cover cases where we might miss 
+			// a number if l > 2^52. 
+			sqrt = (long) Math.sqrt(i) + 1L;
+			
+			// Loop through all previous prime numbers. If the current number doesn't 
+			// contain one of these numbers as a factor, it too is prime as all 
+			// composite numbers are composed of prime factors. 
+			for (int j=0; j < primes.size() && isPrime; j++) {
+				// Check if the current number has a prime factor. If so, it is 
+				// not prime. 
+				if (i % primes.get(j) == 0) {
+					isPrime = false;
+				}
+				// We do not need to check primes greater than the square root of the 
+				// current number we are checking. 
+				if (primes.get(j) > sqrt) {
+					break;
+				}
+			}
+			
+			// If the number is prime, add it to the list of primes
+			if (isPrime) {
 				primes.add(i);
 			}
 		}
 		
 		return primes;
 	}
-	
 	
 	/** Returns true if the specified number is prime. False otherwise. */
 	private boolean isPrime(long l) {
